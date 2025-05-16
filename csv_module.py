@@ -26,7 +26,7 @@ class CSVFileReadError(Exception):
     pass
 
 
-def load_csv_file(csv_path, delimiter=',', loader = 'np'):
+def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_value=0):
     """
     CSV파일을 읽어온다.
     Args:
@@ -82,7 +82,7 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np'):
     csv_path = validate_csv_path(csv_path)
 
     if loader.startswith('np') or loader.endswith('np'):
-        data = _load_csv_with_numpy(csv_path, delimiter)    
+        data = _load_csv_with_numpy(csv_path, delimiter, fillna=fillna, fillna_value=fillna_value)    
     if loader.startswith('pd') or loader.endswith('pd'):
         data = _load_csv_with_pandas(csv_path, delimiter)
 
