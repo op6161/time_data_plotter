@@ -9,8 +9,12 @@ if __name__ == "__main__":
     config = load_config("config.yaml")
     main(
         csv_file_path = config["csv_file_path"],
-        delimiter = config.get("delimiter", ","),
-        new_data_name = config.get("new_data_name", "synthetic wave"),
-        save_path = config.get("save_path", "./added_data.csv"),
-        save_graph = config.get("save_graph", False)
+        delimiter = config.get("delimiter"),
+        new_data_name = config.get("new_data_name"),
+        save_path = config.get("save_path"),
+        save_graph = config.get("save_graph"),
+        fillna = config.get("fillna"),
+        fillna_value = config.get("fillna_value"),
+        fmt = config.get("fmt"),
+        image_name = config.get("save_graph_name"),
     ) 
