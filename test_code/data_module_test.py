@@ -1,6 +1,11 @@
-from data_module import CSVColumnSummer
+import os
+import sys
 
-file_path = '../sample_waves.csv'
+sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
+
+from data_module import *
+
+file_path = '../../sample_waves.csv'
 summer = CSVColumnSummer(file_path)
 # summer.show_config()
 # print(summer.data)
