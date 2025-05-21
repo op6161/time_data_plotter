@@ -1,0 +1,15 @@
+# 機能設定
+csv_file_path: ../sample_waves.csv        # 読み込むCSVファイル名
+save_path: ./output.csv                   # 新しく生成されたデータを含むCSVファイル名
+new_data_name: synthetic wave             # 合成波のヘッダー名
+save_graph: true                          # グラフイメージを保存するか
+
+# save_graph_name: output_plot            # グラフイメージのファイル名（省略時はCSV名と同じ）
+
+# CSV読み込みオプション
+delimiter: ','                            # 区切り文字
+fillna: true                              # nan値を置換するか
+fillna_value: 0                           # nan値の置換値
+
+# CSV保存オプション
+fmt: '%8g'                                # 保存時のデータフォーマット
