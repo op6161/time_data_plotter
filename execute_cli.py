@@ -1,5 +1,3 @@
-from data_module import CSVColumnSummer
-from plot_module import Plotter
 import argparse
 from main import main
 
@@ -32,7 +30,7 @@ if __name__ == "__main__":
                         help="グラフをファイルとして保存するかどうか"
                         )
     
-    parser.add_argument("-f",
+    parser.add_argument("-f","--fillna",
                         default=True,
                         action="store_false", 
                         help="設定時、NaNを'-fv'で埋めしない"
@@ -44,7 +42,7 @@ if __name__ == "__main__":
                         help="NaNを埋める値（デフォルト: 0）"
                         )
     
-    parser.add_argument("-fmt","--format",
+    parser.add_argument("-fmt","--fmt","--format",
                         default='%8g', 
                         help="CSV出力時の数値フォーマット（デフォルト: %8g）。\
                             有効数字8桁、指数表記対応、末尾の不要なゼロは自動的に省略されます。"
