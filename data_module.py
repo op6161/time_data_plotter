@@ -176,7 +176,7 @@ class CSVColumnSummer:
     
     def save_combined(self, 
                       save_path="./added_data.csv", 
-                      header=None, 
+                      header='new_data', 
                       sum_target = None,
                       timestamps=True,): 
         """
@@ -198,6 +198,7 @@ class CSVColumnSummer:
         """
         self.__data_check()
         combined_data = self.add_sum_column(sum_target, timestamp=timestamps)
+        
         header = self.csv_header + ',' +  header
         self.added_header = header
 
