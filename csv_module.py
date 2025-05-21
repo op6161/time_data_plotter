@@ -3,109 +3,129 @@ import numpy as np
 import pandas as pd
 
 class InvalidFileTypeError(Exception):
-    """CSV파일이 아닐 경우"""
+    """CSVファイルでない場合に発生する例外"""
     pass
 
 class CSVFileReadError(Exception):
-    """CSV파일을 읽어오지 못할 경우
+    """CSVファイルの読み込みに失敗した場合に発生する例外
     Attributes:
-        filepath (str): CSV파일 경로
-        original_exception (Exception): 원래 발생한 예외
-        message (str): 오류 메시지
+        filepath (str): CSVファイルのパス
+        original_exception (Exception): 元の例外
+        message (str): エラーメッセージ
     """
     def __init__(self, filepath, original_exception=None):
         self.filepath = filepath
         self.original_exception = original_exception
-        self.message = f"CSV 파일을 읽을 수 없습니다: {filepath}"
+        self.message = f"Cannot read CSV file: {filepath}"
         if original_exception:
-            self.message += f" (원인: {original_exception})"
+            self.message += f" (Reason: {original_exception})"
         super().__init__(self.message)
 
     def __str__(self):
         return self.message
-    pass
 
 
 def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_value=0):
     """
-    CSV파일을 읽어온다.
+    CSVファイルを読み込みます。
     Args:
-        csv_path (str): CSV파일의 경로
-        delimiter (str): CSV파일 구분자  default: ','
-        loader (str): np, pd 중 선택    default: 'np'
+        csv_path (str): CSVファイルのパス
+        delimiter (str): CSVファイルの区切り文字（デフォルト: ','）
+        loader (str): 'np'または'pd'を指定（デフォルト: 'np'）
 
     Returns:
-        data (np.ndarray or pd.DataFrame): CSV파일 데이터
+        data (np.ndarray または pd.DataFrame): 読み込んだCSVファイルのデータ
 
     Raises:
-        CSVFileReadError: CSV파일을 읽어오지 못할 경우
-        InvalidFileTypeError: CSV파일이 아닐 경우
+        CSVFileReadError: CSVファイルの読み込みに失敗した場合に発生します
+        InvalidFileTypeError: ファイルがCSVファイルでない場合に発生します
 
     Example:
         data = load_csv_file('data.csv', delimiter=',', loader='np')
         data = load_csv_file('data.csv', delimiter=',', loader='pd')
     """
-    
     def _load_csv_with_numpy(csv_path, delimiter, fillna=True ,fillna_value=0):
         """
-        numpy로 CSV파일을 읽어온다.
+        numpyでCSVファイルを読み込みます。
         Args:
-            csv_path (str): CSV파일의 경로
-            delimiter (str): CSV파일 구분자  default: ','
+            csv_path (str): CSVファイルのパス
+            delimiter (str): CSVファイルの区切り文字（デフォルト: ','）
 
         Returns:
-            data (np.ndarray): CSV파일 데이터
+            data (np.ndarray): 読み込んだCSVファイルのデータ
         """
         args = {
             'delimiter': delimiter,
             'skip_header': 1,
             }
         if fillna:
-            args['filling_values'] = fillna_value
+            args['fill_value'] = fillna_value
         
-        data = np.genfromtxt(csv_path, **args)
-        return data
+        try:
+            data = np.genfromtxt(csv_path, **args)
+            return data
+        except Exception as e1:
+            try:
+                args.pop('skip_header', None)
+                data = np.genfromtxt(csv_path, **args)
+                return data
+            except Exception as e2:
+                 raise CSVFileReadError(csv_path, e2)
 
     def _load_csv_with_pandas(csv_path, delimiter):
         """
-        pandas로 CSV파일을 읽어온다.
+        pandasでCSVファイルを読み込みます。
         Args:
-            csv_path (str): CSV파일의 경로
-            delimiter (str): CSV파일 구분자  default: ','
+            csv_path (str): CSVファイルのパス
+            delimiter (str): CSVファイルの区切り文字（デフォルト: ','）
 
         Returns:
-            data (pd.DataFrame): CSV파일 데이터
+            data (pd.DataFrame): 読み込んだCSVファイルのデータ
         """
-        data = pd.read_csv(csv_path, delimiter=delimiter, skiprows=1)
-        return data
+        
+        try:
+            data = pd.read_csv(csv_path, delimiter=delimiter, skiprows=1)
+            return data
+        except Exception as e1:
+            try:
+                data = pd.read_csv(csv_path, delimiter=delimiter)
+                return data
+            except Exception as e2:
+                 raise CSVFileReadError(csv_path, e2)
 
     csv_path = validate_csv_path(csv_path)
 
-    if loader.startswith('np') or loader.endswith('np'):
+    if loader in ['np', 'numpy']:
         data = _load_csv_with_numpy(csv_path, delimiter, fillna=fillna, fillna_value=fillna_value)    
-    if loader.startswith('pd') or loader.endswith('pd'):
+        if data.shape == (0,):
+            raise CSVFileReadError(csv_path, "Empty Array")
+        elif data.size  == 0:
+            raise CSVFileReadError(csv_path, "Only NaN values found")
+        
+    elif loader == ['pd', 'pandas']:
         data = _load_csv_with_pandas(csv_path, delimiter)
-
-    if data.shape == (0,):
-        raise CSVFileReadError("Error reading CSV file: {}".format(csv_path), data.shape)
-    elif np.isnan(data).all():
-        raise CSVFileReadError("Error reading CSV file: {}".format(csv_path) + " (only NaN values found)")
+        if data.empty:
+            raise CSVFileReadError(csv_path, "Empty DataFrame")
+        elif data.isnull().all().all():
+            raise CSVFileReadError(csv_path, "Only NaN values found")
+    else:
+        raise ValueError("Invalid loader specified. Use 'np' or 'pd'")
     
     return data
 
 
 def validate_csv_path(csv_path):
     """ 
-    CSV파일 경로를 검증한다.
+    CSVファイルのパスを検証します。
     Args:
-        csv_path (str): CSV파일의 경로
+        csv_path (str): CSVファイルのパス
 
     Returns:
-        csv_path (str): 검증된 CSV파일 경로
+        csv_path (str): 検証済みのCSVファイルのパス
 
     Raises:
-        InvalidFileTypeError: CSV파일이 아닐 경우
-        FileNotFoundError: 파일을 찾을 수 없을 경우
+        InvalidFileTypeError: ファイルがCSVファイルでない場合に発生します
+        FileNotFoundError: ファイルが見つからない場合に発生します
     """
     if not csv_path.endswith('.csv'):
         raise InvalidFileTypeError("File must be a CSV file.")
