@@ -1,5 +1,5 @@
 from data_module import CSVColumnSummer
-from plot_module import Ploter
+from plot_module import Plotter
 
 def main(
         csv_file_path, 
@@ -12,15 +12,14 @@ def main(
     x_data, y_data = summer.get_data()
     summer.save_combined(header = new_data_name, save_path = save_path)
 
-    ploter = Ploter()
-    ploter.set_plot(x_data,y_data)
+    plotter = Plotter()
+    plotter.set_plot(x_data,y_data)
 
     if save_graph:
         save_graph_name = save_path.split('.csv')[0]
-        ploter.save_plot(save_graph_name)
+        plotter.save_plot(save_graph_name)
 
-    ploter.draw_plot()
-
+    plotter.draw_plot()
 
 
 if __name__ == "__main__":
