@@ -3,37 +3,36 @@ from csv_module import load_csv_file
 
 class CSVColumnSummer:
     """
-    이 클래스는 CSV파일에서 데이터를 로드하고, 각 행별 선택된 열들의 값 합계를 새로운 열에 추가하며,
-    추가된 데이터를 새로운 CSV파일로 저장하는 기능을 제공합니다.
+    このクラスはCSVファイルからデータをロードし、各行ごとに選択された列の値の合計を新しい列として追加し、
+    追加されたデータを新しいCSVファイルとして保存する機能を提供します。
     Attributes:
-        timestamps (np.ndarray): CSV파일의 timestamps data Array.
-        data (np.ndarray): CSV파일의 time data를 제외한 나머지 data Array.
-        csv_header (str): CSV파일의 헤더 라인.
-        num_columns (int): 데이터의 열의 개수.(time data 제외)
-        num_data (int): 데이터 행의 개수.
-        combined_data (np.ndarray): 새롭게 생성된 열을 포함한 전체 데이터 Array.
-        added_column (np.ndarray): 새롭게 생성된 단일 열 데이터 Array.
-        added_header (str): 새롭게 생성된 단일 열의 헤더 값.
+        timestamps (np.ndarray): CSVファイルのタイムスタンプデータ配列。
+        data (np.ndarray): CSVファイルのタイムデータを除いたその他のデータ配列。
+        csv_header (str): CSVファイルのヘッダー行。
+        num_columns (int): データの列数（タイムデータを除く）。
+        num_data (int): データの行数。
+        combined_data (np.ndarray): 新しく生成された列を含む全データ配列。
+        added_column (np.ndarray): 新しく生成された単一列データ配列。
+        added_header (str): 新しく生成された単一列のヘッダー値。
 
     Methods:
-        set_config(**kwargs): CSVColumnSummer Class의 옵션을 설정합니다.
-            delimiter: str : CSV파일의 구분자 default: ','
-            fillna: bool : load시 nan값을 대체할지 여부 default: True
-            fillna_value: int : load시 nan값을 대체할 값 default: 0
-            fmt: str : save시 CSV파일의 포맷 default: '%.8g'
-            comments: str : save시 CSV파일의 주석 default: '#'
-        show_config(): 현재 설정된 옵션을 출력합니다.
-        add_sum_column(sum_target=None, timestamp=True): 선택된 열의 합계를 새로운 열로 추가합니다.
-        save_data(save_path="./added_data.csv", header="AddedData", sum_target=None, timestamp=True): 생성된 열을 포함한 데이터를 새로운 CSV파일로 저장합니다.
-        get_data(): load된 데이터를 내보낸다.
-        get_header(): load된 데이터의 header를 내보낸다
+        set_config(**kwargs): CSVColumnSummerクラスのオプションを設定します。
+            delimiter: str : CSVファイルの区切り文字 デフォルト: ','
+            fillna: bool : ロード時にnan値を置換するかどうか デフォルト: True
+            fillna_value: int : ロード時にnan値を置換する値 デフォルト: 0
+            fmt: str : 保存時のCSVファイルのフォーマット デフォルト: '%.8g'
+        show_config(): 現在設定されているオプションを表示します。
+        add_sum_column(sum_target=None, timestamp=True): 選択した列の合計を新しい列として追加します。
+        save_data(save_path="./added_data.csv", header="AddedData", sum_target=None, timestamp=True): 生成された列を含むデータを新しいCSVファイルとして保存します。
+        get_data(): ロードされたデータを返します。
+        get_header(): ロードされたデータのヘッダーを返します。
     """
-    def __init__(self, path= None, delimiter=',',fmt='%8g',fillna=True, fillna_value=0, comments='#'):
+    def __init__(self, path= None, delimiter=',',fmt='%8g',fillna=True, fillna_value=0):
         """
-        path: str : path to the CSV file containing the data
-        delimiter: str : delimiter used in the CSV file default: ','
+        path: str : データを含むCSVファイルのパス
+        delimiter: str : CSVファイルで使用される区切り文字（デフォルト: ','）
         """    
-        # 객체 내에서 사용될 변수 정의
+        # クラス初期化
         self.timestamps = None
         self.data = None
         self.csv_header = None
@@ -44,50 +43,45 @@ class CSVColumnSummer:
         self.added_column = None
         self.added_header = "AddedData"
 
-        # 기본 옵션
+        # ディフォルトのオプション
         self.options = {
             'delimiter': delimiter,
             'fmt': fmt,
             'fillna': fillna,
             'fillna_value': fillna_value,
-            'comments': comments
         }
         self.__options_load = {
             'delimiter': delimiter,
             'fillna': fillna,
-            'fillna_value':fillna_value
+            'fillna_value':fillna_value,
         }
         self.__options_save = {
-            'delimiter': delimiter,
             'fmt': fmt,
-            'comments': comments
         }
         
-        # 요청 시 즉시 CSV파일 로드
         if path is not None:
             self.load(path)
     
     def load(self, path, no_header =False):
         """
-        지정한 경로의 CSV 파일을 로드하여 클래스 내부 변수에 데이터를 저장합니다.
+        指定したパスのCSVファイルをロードし、クラス内部の変数にデータを保存します。
 
         Args:
-            path (str): 로드할 CSV 파일 경로
-            no_header (bool): True일 경우 헤더를 읽지 않음, False일 경우 첫 줄을 헤더로 읽음
+            path (str): ロードするCSVファイルのパス
+            no_header (bool): Trueの場合はヘッダーを読み込まず、Falseの場合は最初の行をヘッダーとして読み込みます
 
-        동작:
-            - load_csv_file 함수를 이용해 데이터를 불러옵니다.
-            - 데이터의 첫 번째 열은 timestamps로, 나머지는 data로 분리합니다.
-            - 헤더가 필요하면 파일의 첫 줄을 읽어 csv_header에 저장합니다.
-            - 열과 행의 개수를 각각 num_columns, num_data에 저장합니다.
+        動作:
+            - load_csv_file関数を利用してデータを読み込みます。
+            - データの最初の列をtimestampsとして、残りをdataとして分離します。
+            - ヘッダーが必要な場合はファイルの最初の行を読み込みcsv_headerに保存します。
+            - 列数と行数をそれぞれnum_columns, num_dataに保存します。
         """
-        # csv로드
+
         data = load_csv_file(path, **self.__options_load)
-        # 객체에서 사용할 data 추출
         num_columns = len(data[0])
 
         if not no_header:
-            # 데이터가 header를 포함하지 않기 때문에, header를 따로 읽어오기
+            #　データがヘッダーを含まないため、ヘッダーを別途読み込む
             with open(path, 'r', encoding='utf-8') as f:
                 header_line = f.readline().strip()
 
@@ -96,30 +90,30 @@ class CSVColumnSummer:
         self.csv_header = header_line
         self.num_columns = num_columns-1
         self.num_data = len(self.timestamps)
-        # print(f"Loaded data shape: {self.data.shape} (타임스탬프 제외)") 
+
     
     def __data_check(self):
         """
-        load가 1회이상 실행되어 data가 생성되었는지 확인
+        loadが1回以上実行され、dataが生成されているかを確認します。
 
         Raises:
-            ValueError: 데이터가 로드되지 않은 경우 예외를 발생시킵니다.
+            ValueError: データがロードされていない場合に発生します。
         """
         if self.data is None:
             raise ValueError("Data is not loaded. Please call 'load('file_path')' before accessing the data.")
 
     def set_config(self,**kwargs):
         """
-        클래스 내의 연산 옵션을 설정한다.
+        クラス内の演算オプションを設定します。
+
         Args:
-            delimiter(str): CSV파일의 구분자 default: ','    
-            fillna(bool): load시 nan값을 대체할지 여부 default: True    
-            fillna_value(int): load시 nan값을 대체할 값 default: 0
-            fmt(str): save시 CSV파일의 포맷 default: '%.8g'
-            comments(str): save시 CSV파일의 주석 default: '#'
+            delimiter (str): CSVファイルの区切り文字 デフォルト: ','
+            fillna (bool): ロード時にnan値を置換するかどうか デフォルト: True
+            fillna_value (int): ロード時にnan値を置換する値 デフォルト: 0
+            fmt (str): 保存時のCSVファイルのフォーマット デフォルト: '%.8g'
 
         Raises:
-            ValueError: 정의되지 않은 옵션을 설정한 겨웅, 예외를 발생시킵니다.
+            ValueError: 定義されていないオプションを設定した場合に発生します。
         """
         allowed_options = self.options.keys()
 
@@ -141,7 +135,7 @@ class CSVColumnSummer:
 
     def show_config(self):
         """
-        클래스 내의 현재 설정된 저장/로드 옵션을 출력한다.
+        クラス内の現在設定されている保存/ロードオプションを表示します。
         """
         print("CSVColumnSummer Configuration:")
         for key, value in self.options.items():
@@ -150,20 +144,20 @@ class CSVColumnSummer:
 
     def add_sum_column(self, sum_target=None, timestamp=True):
         """
-        행 별로 데이터의 선택된 열의 값을 합하여 새로운 열을 생성한다.
-        새로 생성된 열은 기존 데이터의 마지막 열에 추가된다.
-        결과값에 타임스탬프 데이터를 포함할지 여부를 선택할 수 있다.
+        各行ごとにデータの選択された列の値を合計し、新しい列を生成します。
+        新しく生成された列は既存データの最後の列に追加されます。
+        結果にタイムスタンプデータを含めるかどうかを選択できます。
 
         Args:
-            sum_target(list): 값을 합할 열의 인덱스 리스트 default:None(전체)
-            timestamp(bool): 결과값에 timestamp를 포함할지 여부 default:True
+            sum_target (list): 合計する列のインデックスリスト デフォルト: None（全ての列）
+            timestamp (bool): 結果にタイムスタンプを含めるかどうか デフォルト: True
         
         Returns:
-            np.ndarray : 기존 데이터에 새로운 열이 추가된 array
+            np.ndarray : 既存データに新しい列が追加された配列
 
         Raises:
-            ValueError: 데이터가 로드되지 않은 경우 예외를 발생시킵니다.
-        """
+            ValueError: データがロードされていない場合に発生します。
+        """        
         self.__data_check()
         data_arr = self.data
         if timestamp:
@@ -186,45 +180,46 @@ class CSVColumnSummer:
                       sum_target = None,
                       timestamps=True,): 
         """
-        새로 생성된 데이터와 결합된 데이터를 CSV 파일로 저장한다
+        新しく生成されたデータと結合データをCSVファイルとして保存します。
+
         Args:
-            save_path: str : 저장할 파일 경로
-            title: str : 생성된 열의 헤더 이름
-            sum_target: list : 값을 합할 열의 인덱스 리스트 default:None(전체)
-            timestamps: bool : 결과값에 timestamp를 포함할지 여부 default:True
+            save_path (str): 保存するファイルのパス
+            header (str): 生成された列のヘッダー名
+            sum_target (list): 合計する列のインデックスリスト デフォルト: None（全ての列）
+            timestamps (bool): 結果にタイムスタンプを含めるかどうか デフォルト: True
 
         Return:
-            ndarray
-            str
+            tuple: (combined_data, header)
+                combined_data (np.ndarray): 既存データに新しい列が追加された配列
+                header (str): 保存されたCSVファイルのヘッダー
 
         Raises:
-            ValueError: 데이터가 로드되지 않은 경우 예외를 발생시킵니다.
+            ValueError: データがロードされていない場合に発生します。
         """
         self.__data_check()
         combined_data = self.add_sum_column(sum_target, timestamp=timestamps)
         header = self.csv_header + ',' +  header
-        if header is not None:
-            self.added_header = header
+        self.added_header = header
 
-        np.savetxt(save_path, combined_data, header=self.added_header, **self.__options_save)
+        np.savetxt(save_path, combined_data, delimiter=',',  header=self.added_header, **self.__options_save)
         print(f"Data saved to {save_path} with header: {header}")
         return combined_data, header
     
     def get_data(self, combined=True):
         """
-        로드된 데이터와 타임스탬프를 반환합니다.
+        ロードされたデータとタイムスタンプを返します。
 
         Args:
-            combined (bool): True일 경우, 선택된 열의 합계가 추가된 데이터를 반환합니다.
-                             False일 경우, 원본 데이터만 반환합니다.
+            combined (bool): Trueの場合、選択した列の合計が追加されたデータを返します。
+                             Falseの場合、元のデータのみを返します。
 
         Returns:
             tuple: (x_data, y_data)
-                x_data (np.ndarray): 요청한 형태의 데이터 배열
-                y_data (np.ndarray): 타임스탬프 배열
+                x_data (np.ndarray): 要求された形式のデータ配列
+                y_data (np.ndarray): タイムスタンプ配列
 
         Raises:
-            ValueError: 데이터가 로드되지 않은 경우 예외를 발생시킵니다.
+            ValueError: データがロードされていない場合に発生します。
         """
         self.__data_check()
 
@@ -237,17 +232,17 @@ class CSVColumnSummer:
 
     def get_header(self, combined=True):
         """
-        현재 로드된 데이터의 헤더 정보를 반환합니다.
+        現在ロードされているデータのヘッダー情報を返します。
 
         Args:
-            combined (bool): True일 경우, 기존 CSV 헤더와 추가된 열의 헤더(added_header)를 결합하여 반환합니다.
-                             False일 경우, 기존 CSV 헤더만 반환합니다.
+            combined (bool): Trueの場合、既存のCSVヘッダーと追加された列のヘッダー（added_header）を結合して返します。
+                             Falseの場合、既存のCSVヘッダーのみを返します。
 
         Returns:
-            str: 요청한 형태의 헤더 문자열
+            str: 要求された形式のヘッダー文字列
 
         Raises:
-            ValueError: 데이터가 로드되지 않은 경우 예외를 발생시킵니다.
+            ValueError: データがロードされていない場合に発生します。
         """
         self.__data_check()
         if combined:
@@ -261,7 +256,6 @@ if __name__ == "__main__":
     example_file_path = '../sample_waves.csv'
     summer = CSVColumnSummer()
     summer.set_config( 
-        comments = '#', 
         fmt = '%.8g', 
         fillna = False, 
         fillna_value=0)
