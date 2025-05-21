@@ -59,7 +59,7 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
             'skip_header': 1,
             }
         if fillna:
-            args['fill_value'] = fillna_value
+            args['filling_values'] = fillna_value
         
         try:
             data = np.genfromtxt(csv_path, **args)
