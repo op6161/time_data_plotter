@@ -9,37 +9,32 @@ if __name__ == "__main__":
                         help="入力するCSVファイルのパス"
                         )
     
+    # オプション引数
     parser.add_argument("-d","--delimiter", 
                         default=",", 
-                        help="区切り文字（デフォルト: ,）"
+                        help="入力するCSVファイルの区切り文字（デフォルト: ,）"
                         )
 
-    # オプション引数
     parser.add_argument("-n","--new_data_name",
                         default="synthetic wave", 
-                        help="追加するカラム名（デフォルト: synthetic wave）"
+                        help="モジュールに生成され、追加するカラムのカラム名（デフォルト: synthetic wave）"
                         )
 
-    parser.add_argument("-s","--save_path", 
-                        default='./added_data.csv', 
-                        help="結果CSVの保存パス（デフォルト: ./added_data.csv）"
-                        )
-    
-    parser.add_argument("-g","--save_graph", 
-                        action="store_true", 
-                        help="グラフをファイルとして保存するかどうか"
-                        )
-    
     parser.add_argument("-f","--fillna",
                         default=True,
                         action="store_false", 
-                        help="設定時、NaNを'-fv'で埋めしない"
+                        help="設定時、NaNを'-fv'で埋めしない（デフォルト: 埋めする）"
                         )
     
     parser.add_argument("-fv","--fillna_value",
                         default=0, 
                         type=float,
                         help="NaNを埋める値（デフォルト: 0）"
+                        )
+
+    parser.add_argument("-s","--save_path", 
+                        default='./added_data.csv', 
+                        help="既存のデータにカラムを追加して新しく生成された結果CSVの保存パス（デフォルト: ./added_data.csv）"
                         )
     
     parser.add_argument("-fmt","--fmt","--format",
@@ -48,9 +43,14 @@ if __name__ == "__main__":
                             有効数字8桁、指数表記対応、末尾の不要なゼロは自動的に省略されます。"
                         )
     
+    parser.add_argument("-g","--save_graph", 
+                        action="store_true", 
+                        help="プロットのイメージを保存するかどうか"
+                        )
+    
     parser.add_argument("-img","--save_graph_name","--image_name",
                         default=None, 
-                        help="グラフの保存名（デフォルト: None）"
+                        help="保存するプロットのイメージ名を設定（デフォルト: CSVファイルと同じ）"
                         )
 
     args = parser.parse_args()
