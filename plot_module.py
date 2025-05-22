@@ -43,9 +43,11 @@ class Plotter:
         self.labels = labels
         self.title = title
         self.xlabel = xlabel
+        print("Plotter initialized.") # txt log
         
         if x_data is not None and y_data is not None:
             self.set_plot(x_data,y_data,labels,title,xlabel)
+        
         
 
     def set_plot(self, x_data, y_data, labels=None, title='Plot', xlabel='Time'):
@@ -81,6 +83,7 @@ class Plotter:
             ax.tick_params(axis='y', direction='in', labelsize=8)
             ax.legend([label], loc='center left', bbox_to_anchor=(0.995, 0.885), fontsize=8)
             ax.margins(y=0.2)
+            print(f"{label} plot created.") # txt log
             return ax
 
         # 入力データの検証
@@ -124,6 +127,13 @@ class Plotter:
         self.title = title
         self.xlabel = xlabel
 
+        print("Plot set successfully.") # txt log
+        print(f"x_data shape: {x_data.shape}") # txt log
+        print(f"y_data shape: {y_data.shape}") # txt log
+        print(f"labels: {labels}") # txt log
+        print(f"title: {title}") # txt log
+        print(f"xlabel: {xlabel}") # txt log
+
         return fig, axes
     
 
@@ -142,6 +152,7 @@ class Plotter:
         """
         self.__data_check()
         plt.show()
+        print("Plot drew on new window.") # txt log
 
     def save_plot(self, name, fmt='.png'):
         """
@@ -154,6 +165,7 @@ class Plotter:
         if not fmt.startswith('.'):
             fmt = '.' + fmt
         self.fig.savefig(name+fmt)
+        print(f"Plot saved as {name+fmt}") # txt log
 
     def close_plot(self):
         """

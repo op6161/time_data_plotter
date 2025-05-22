@@ -131,6 +131,8 @@ def validate_csv_path(csv_path):
         raise InvalidFileTypeError("File must be a CSV file.")
     if not os.path.exists(csv_path):
         raise FileNotFoundError(f"File not found: {csv_path}")
+    
+    print(f"CSV file path validated: {csv_path}") # txt log
     return csv_path
 
 if __name__ == "__main__":

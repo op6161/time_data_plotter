@@ -59,6 +59,9 @@ class CSVColumnSummer:
             'fmt': fmt,
         }
         
+        print("CSVColumnSummer initialized") # txt log
+        print("CSVColumnSummer.options:", self.options) # txt log
+
         if path is not None:
             self.load(path)
     
@@ -90,6 +93,10 @@ class CSVColumnSummer:
         self.csv_header = header_line
         self.num_columns = num_columns-1
         self.num_data = len(self.timestamps)
+
+        print(f"CSVColumnSummer.data Loaded from {path}") # txt log
+        print(f"CSVColumnSummer.data Number of columns: {self.num_columns}, (without timestamp)") # txt log
+        print(f"CSVColumnSummer.data Number of lows: {self.num_data}") # txt log
 
     
     def __data_check(self):
@@ -129,9 +136,9 @@ class CSVColumnSummer:
                 
             else:
                 raise ValueError(f"Invalid option: {key}. Allowed options are: {allowed_options}")
-        ## debug
-        # print("set config completed:")
-        # self.show_config()
+  
+        print("data_module set config completed") # txt log
+        self.show_config() # txt log
 
     def show_config(self):
         """
@@ -203,7 +210,7 @@ class CSVColumnSummer:
         self.added_header = header
 
         np.savetxt(save_path, combined_data, delimiter=',',  header=self.added_header, **self.__options_save)
-        print(f"Data saved to {save_path} with header: {header}")
+        print(f"CSVColumnSummer.combined_data saved to {save_path} with header: {header}") # txt log
         return combined_data, header
     
     def get_data(self, combined=True):
