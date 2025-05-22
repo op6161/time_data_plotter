@@ -1,7 +1,7 @@
 # 機能設定
 csv_file_path: ../sample_waves.csv        # 読み込むCSVファイル名
-save_path: ./output.csv                   # 新しく生成されたデータを含むCSVファイル名
-new_data_name: synthetic wave             # モジュールに生成され、追加するカラムのカラム名
+save_path: ./sample_with_wave4.csv        # 新しく生成されたデータを含むCSVファイル名
+new_data_name: wave4                      # モジュールに生成され、追加するカラムのカラム名
 save_graph: true                          # プロットのイメージを保存するかどうか
 
 # save_graph_name: output_plot            # 保存するプロットのイメージ名を設定（デフォルト: CSVファイルと同じ）
