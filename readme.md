@@ -2,7 +2,7 @@
 ```python execute_cli.py ファイルのパス オプション```
 > cliに入力するオプションから実行
 
-> コマンドに入力できるオプション：
+### コマンドに入力できるオプション：
 #### 入力データのオプション
 ```
 -d（--delimiter）：入力するCSVファイルの区切り文字
@@ -18,6 +18,7 @@
 -g（--save_graph）：プロットのイメージを保存するかどうか
 -img（--save_graph_name・--image_name）：保存するプロットのイメージ名を設定（デフォルト: CSVファイルと同じ）
 ```
+
 ===
 
 ```python execute_by_setting.py```
