@@ -18,7 +18,7 @@ def main(
     summer.set_config(fmt=fmt)
 
     plotter = Plotter()
-    plotter.set_plot(x_data,y_data)
+    plotter.set_plot(x_data,y_data,labels={-1: new_data_name})
 
     if save_graph:
         save_graph_name = save_path.split('.csv')[0] if image_name is None else image_name
