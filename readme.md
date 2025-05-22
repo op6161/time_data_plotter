@@ -1,4 +1,24 @@
-```python execute_cli.py ../sample_waves.csv```
+## 実行例：
+```python execute_cli.py ファイルのパス オプション```
+> cliに入力するオプションから実行
 
+> コマンドに入力できるオプション：
+#### 入力データのオプション
+```
+-d（--delimiter）：入力するCSVファイルの区切り文字
+-n（--new_data_name）：モジュールに生成され、追加するカラムのカラム名
+-f（--fillna）：設定時、入力するデータのNaNを'-fv'値で埋めしない（デフォルト：埋めする）
+-fv（--fillna_value）：NaNを埋める値（デフォルト: 0）
+```
+#### 出力データのオプション
+```
+-s（--save_path）：既存のデータにカラムを追加して新しく生成された結果CSVの保存パス
+-fmt（--fmt・--format）：CSV出力時の数値フォーマット（デフォルト: %8g）。
+        (%8g:有効数字8桁、指数表記対応、末尾の不要なゼロは自動的に省略されます。)
+-g（--save_graph）：プロットのイメージを保存するかどうか
+-img（--save_graph_name・--image_name）：保存するプロットのイメージ名を設定（デフォルト: CSVファイルと同じ）
+```
+===
 
 ```python execute_by_setting.py```
+> config.yamlに入力した情報から実行
