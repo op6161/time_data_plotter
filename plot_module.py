@@ -21,7 +21,11 @@ class Plotter:
         fig (matplotlib.figure.Figure): プロット用のFigureオブジェクト
         x_data (np.ndarray): 各列が異なるデータ系列（例：wave1, wave2, ...）を表す2次元配列
         y_data (np.ndarray): x_dataに対応するx軸データ（時系列の場合はタイムスタンプ）
-        labels (list): プロットのラベルリスト
+        labels (list or dict): 各プロットのラベルリストまたは辞書
+            例：labels = {0: 'wave1', 5: 'wave6', -1: 'wave50'} 
+            * セットしないcolumnは、順番にあわせて自動的に wave1, wave2, ...とラベル付けされます。
+            例：labels = ['wave1', 'wave2', ..., -1: 'wave50']
+            * 入力がリストの場合はリストの長さはx_dataの列数と一致する必要があります。
         title (str): プロットのタイトル
         xlabel (str): X軸のラベル
         
@@ -106,6 +110,16 @@ class Plotter:
 
         if labels is None:
             labels = [f"wave{i+1}" for i in range(cols)]
+            
+        elif type(labels) is dict:
+            backup_labels = labels.copy()
+            labels = [f"wave{i+1}" for i in range(cols)]
+            for key, value in backup_labels.items():
+                labels[key] = value
+                
+        elif type(labels) is list:
+            if len(labels) != cols:
+                raise ValueError("The length of labels must match the number of columns in x_data. Use a dictionary to specify labels for specific columns.")
 
         for i in range(cols):
             sharex = axes[0] if i > 0 else None
