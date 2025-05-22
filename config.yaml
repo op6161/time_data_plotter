@@ -1,15 +1,18 @@
 # 機能設定
 csv_file_path: ../sample_waves.csv        # 読み込むCSVファイル名
 save_path: ./output.csv                   # 新しく生成されたデータを含むCSVファイル名
-new_data_name: synthetic wave             # 合成波のヘッダー名
-save_graph: true                          # グラフイメージを保存するか
+new_data_name: synthetic wave             # モジュールに生成され、追加するカラムのカラム名
+save_graph: true                          # プロットのイメージを保存するかどうか
 
-# save_graph_name: output_plot            # グラフイメージのファイル名（省略時はCSV名と同じ）
+# save_graph_name: output_plot            # 保存するプロットのイメージ名を設定（デフォルト: CSVファイルと同じ）
 
 # CSV読み込みオプション
-delimiter: ','                            # 区切り文字
+delimiter: ','                            # 入力するCSVファイルの区切り文字
 fillna: true                              # nan値を置換するか
 fillna_value: 0                           # nan値の置換値
 
 # CSV保存オプション
-fmt: '%8g'                                # 保存時のデータフォーマット
+fmt: '%8g'                                # CSV保存時の数値フォーマット（デフォルト: %8g）。
+                                          #(%8g:有効数字8桁、指数表記対応、末尾の不要なゼロは自動的に省略されます。)保存時のデータフォーマット
+
+#

@@ -39,7 +39,7 @@ if __name__ == "__main__":
     
     parser.add_argument("-fmt","--fmt","--format",
                         default='%8g', 
-                        help="CSV出力時の数値フォーマット（デフォルト: %8g）。\
+                        help="CSV保存時の数値フォーマット（デフォルト: %8g）。\
                             有効数字8桁、指数表記対応、末尾の不要なゼロは自動的に省略されます。"
                         )
     

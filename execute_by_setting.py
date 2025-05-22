@@ -6,7 +6,10 @@ def load_config(config_path="config.yaml"):
         return yaml.safe_load(f)
 
 if __name__ == "__main__":
-    config = load_config("config.yaml")
+
+    config_path = "config.yaml"
+    
+    config = load_config(config_path)
     main(
         csv_file_path = config["csv_file_path"],
         delimiter = config.get("delimiter"),
