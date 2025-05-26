@@ -1,5 +1,6 @@
 import numpy as np
 from csv_module import load_csv_file
+import os
 
 class CSVColumnSummer:
     """
@@ -197,6 +198,7 @@ class CSVColumnSummer:
             ValueError: データがロードされていない場合に発生します。
         """
         self.__data_check()
+        save_path = save_path_check(save_path)
         combined_data = self.add_sum_column(sum_target, timestamp=timestamps)
         
         header = self.csv_header + ',' +  header
@@ -251,6 +253,22 @@ class CSVColumnSummer:
         else:
             header = self.csv_header
         return header
+
+
+def save_path_check(path):
+    """
+    指定されたパスをsys.pathに追加します。
+
+    Args:
+        path (str): 追加するパス
+
+    Returns:
+        None
+    """
+    save_dir = os.path.dirname(path)
+    if save_dir and not os.path.exists(save_dir):
+        os.makedirs(save_dir, exist_ok=True)
+    return path
 
 if __name__ == "__main__":
     # Example usage
