@@ -1,5 +1,5 @@
-from data_module import CSVColumnSummer
-from plot_module import Plotter
+from module.data_module import CSVColumnSummer
+from module.plot_module import Plotter
 
 def main(
         csv_file_path, 

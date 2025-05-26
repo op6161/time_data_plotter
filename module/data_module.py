@@ -1,5 +1,5 @@
 import numpy as np
-from csv_module import load_csv_file
+from .csv_module import load_csv_file
 import os
 
 class CSVColumnSummer:
