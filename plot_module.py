@@ -147,6 +147,7 @@ class Plotter:
         print(f"labels: {labels}") # txt log
         print(f"title: {title}") # txt log
         print(f"xlabel: {xlabel}") # txt log
+        print("==="*10) # txt log
 
         return fig, axes
     
@@ -166,7 +167,7 @@ class Plotter:
         """
         self.__data_check()
         plt.show()
-        print("Plot drew on new window.") # txt log
+        print("Plot drawn on new window.") # txt log
 
     def save_plot(self, name, fmt='.png'):
         """

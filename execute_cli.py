@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    print("execute_cli.py")
+    print("run execute_cli.py")
     print("args:", args)
 
     main(

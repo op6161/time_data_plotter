@@ -10,7 +10,7 @@ if __name__ == "__main__":
     config_path = "config.yaml"
     
     config = load_config(config_path)
-    print("execute_by_setting.py")
+    print("run execute_by_setting.py")
     print("config:", config)
     main(
         csv_file_path = config["csv_file_path"],

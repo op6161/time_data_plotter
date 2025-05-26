@@ -148,7 +148,7 @@ class CSVColumnSummer:
         print("CSVColumnSummer Configuration:")
         for key, value in self.options.items():
             print(f"{key}: {value}")
-        print("===")
+        print("==="*10) # txt log
 
     def add_sum_column(self, sum_target=None, timestamp=True):
         """

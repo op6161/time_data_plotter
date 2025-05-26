@@ -111,6 +111,8 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
     else:
         raise ValueError("Invalid loader specified. Use 'np' or 'pd'")
     
+    print(f"CSV file loaded successfully: {csv_path}")  # txt log\
+    print("==="*10) # txt log
     return data
 
 
