@@ -102,7 +102,7 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
         elif data.size  == 0:
             raise CSVFileReadError(csv_path, "Only NaN values found")
         
-    elif loader == ['pd', 'pandas']:
+    elif loader in ['pd', 'pandas']:
         data = _load_csv_with_pandas(csv_path, delimiter)
         if data.empty:
             raise CSVFileReadError(csv_path, "Empty DataFrame")
