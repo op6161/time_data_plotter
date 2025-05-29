@@ -1,6 +1,7 @@
 import numpy as np
 from .csv_module import load_csv_file
 import os
+from typing import Dict, Any, Optional
 
 class CSVColumnSummer:
     """
@@ -19,8 +20,6 @@ class CSVColumnSummer:
     Methods:
         set_config(**kwargs): CSVColumnSummerクラスのオプションを設定します。
             delimiter: str : CSVファイルの区切り文字 デフォルト: ','
-            fillna: bool : ロード時にnan値を置換するかどうか デフォルト: True
-            fillna_value: int : ロード時にnan値を置換する値 デフォルト: 0
             fmt: str : 保存時のCSVファイルのフォーマット デフォルト: '%.8g'
         show_config(): 現在設定されているオプションを表示します。
         add_sum_column(sum_target=None, timestamp=True): 選択した列の合計を新しい列として追加します。
@@ -28,63 +27,78 @@ class CSVColumnSummer:
         get_data(): ロードされたデータを返します。
         get_header(): ロードされたデータのヘッダーを返します。
     """
-    def __init__(self, path= None, delimiter=',',fmt='%8g',fillna=True, fillna_value=0):
+
+    # - delimiter: str : CSVファイルの区切り文字 デフォルト: ','
+    # - fmt: str : 保存するCSVファイルのフォーマット設定　ディフォルト：'%8g'
+    # - loader: str : データロード方法を指定、'np' または 'pd'
+    # - added_header: str : 新しく生成されるデータ列のヘッダー名
+    DEFAULT_OPTIONS = {
+        'delimiter': ',',
+        'fmt': '%8g',
+        'loader': 'np',
+        'added_header': 'AddedData',
+    }
+
+    def __init__(self, path: str = None, options: Optional[Dict[str, Any]] = None):
         """
+        Args:
+        options: Dict[str, Any] : オプションの辞書
+        例:
         path: str : データを含むCSVファイルのパス
         delimiter: str : CSVファイルで使用される区切り文字（デフォルト: ','）
+        
         """    
         # クラス初期化
-        self.timestamps = None
-        self.data = None
-        self.csv_header = None
-        self.num_columns = None
-        self.num_data = None
+        self.timestamps: Optional[np.ndarray] = None
+        self.data: Optional[np.ndarray] = None
+        self.csv_header: Optional[str] = None
+        self.num_columns: Optional[int] = None
+        self.num_raws: Optional[int] = None
         
         self.combined_data = None
         self.added_column = None
-        self.added_header = "AddedData"
 
-        # ディフォルトのオプション
-        self.options = {
-            'delimiter': delimiter,
-            'fmt': fmt,
-            'fillna': fillna,
-            'fillna_value': fillna_value,
-        }
-        self.__options_load = {
-            'delimiter': delimiter,
-            'fillna': fillna,
-            'fillna_value':fillna_value,
-        }
-        self.__options_save = {
-            'fmt': fmt,
-        }
+        self.process_options = self.DEFAULT_OPTIONS.copy()
+
+        if options:
+            # optionsが指定されている場合は、オプションを更新
+            self.set_options(**options)
         
         if path is not None:
-            self.load(path)
+            self.load_data(path)
     
-    def load(self, path, no_header =False):
+    def set_options(self, **kwargs):
         """
-        指定したパスのCSVファイルをロードし、クラス内部の変数にデータを保存します。
+        クラスのオプションを設定します。
 
         Args:
-            path (str): ロードするCSVファイルのパス
-            no_header (bool): Trueの場合はヘッダーを読み込まず、Falseの場合は最初の行をヘッダーとして読み込みます
-
-        動作:
-            - load_csv_file関数を利用してデータを読み込みます。
-            - データの最初の列をtimestampsとして、残りをdataとして分離します。
-            - ヘッダーが必要な場合はファイルの最初の行を読み込みcsv_headerに保存します。
-            - 列数と行数をそれぞれnum_columns, num_dataに保存します。
+            **kwargs: オプションのキーワード引数
+                delimiter (str): CSVファイルの区切り文字 デフォルト: ','
+                fmt (str): 保存時のCSVファイルのフォーマット デフォルト: '%.8g'
+                loader (str): 'np'または'pd'を指定（デフォルト: 'np'）
+                added_header (str): 新しく生成された列のヘッダー名（デフォルト: 'AddedData'）
         """
+        if not kwargs:
+            raise ValueError("オプションを指定してください。")
+        
+        for key, value in kwargs.items():
+            if key in self.process_options:
+                self.process_options[key] = value
+            else:
+                raise ValueError(f"{key}はオプションに存在しません。allowed_options：　{self.process_options.keys()}")
+            
+        print(f"options updated: {self.process_options}")
 
-        data = load_csv_file(path, **self.__options_load)
+
+    def load_data(self, path) -> None:
+        """
+        指定したパスのCSVファイルをロードし、クラス内部の変数にデータを保存します。
+        """
+        loader = self.process_options.get('loader', 'np')
+        delimiter = self.process_options.get('delimiter', ',')
+        
+        data, header_line = load_csv_file(path, delimiter=delimiter,loader=loader)
         num_columns = len(data[0])
-
-        if not no_header:
-            #　データがヘッダーを含まないため、ヘッダーを別途読み込む
-            with open(path, 'r', encoding='utf-8') as f:
-                header_line = f.readline().strip()
 
         self.timestamps = data[:,0]
         self.data = data[:,1:]
@@ -92,120 +106,56 @@ class CSVColumnSummer:
         self.num_columns = num_columns-1
         self.num_data = len(self.timestamps)
 
-    
-    def __data_check(self):
+        self.combined_data = self._get_combined_data()
+
+    def _data_check(self) -> None:
         """
         loadが1回以上実行され、dataが生成されているかを確認します。
 
         Raises:
             ValueError: データがロードされていない場合に発生します。
         """
-        if self.data is None:
-            raise ValueError("Data is not loaded. Please call 'load('file_path')' before accessing the data.")
+        if self.data is None or self.timestamps is None:
+            raise ValueError("データがロードされていません。loadメソッドを実行してください。")
 
-    def set_config(self,**kwargs):
-        """
-        クラス内の演算オプションを設定します。
 
-        Args:
-            delimiter (str): CSVファイルの区切り文字 デフォルト: ','
-            fillna (bool): ロード時にnan値を置換するかどうか デフォルト: True
-            fillna_value (int): ロード時にnan値を置換する値 デフォルト: 0
-            fmt (str): 保存時のCSVファイルのフォーマット デフォルト: '%.8g'
-
-        Raises:
-            ValueError: 定義されていないオプションを設定した場合に発生します。
-        """
-        allowed_options = self.options.keys()
-
-        for key, value in kwargs.items():
-            if key in allowed_options:
-                if key in self.options:
-                    self.options[key] = value
-
-                if key in self.__options_load:
-                    self.__options_load[key] = value
-                if key in self.__options_save:
-                    self.__options_save[key] = value
-                
-            else:
-                raise ValueError(f"Invalid option: {key}. Allowed options are: {allowed_options}")
-        ## debug
-        # print("set config completed:")
-        # self.show_config()
-
-    def show_config(self):
-        """
-        クラス内の現在設定されている保存/ロードオプションを表示します。
-        """
-        print("CSVColumnSummer Configuration:")
-        for key, value in self.options.items():
-            print(f"{key}: {value}")
-        print("===")
-
-    def add_sum_column(self, sum_target=None, timestamp=True):
+    def _get_combined_data(self, sum_target=None):
         """
         各行ごとにデータの選択された列の値を合計し、新しい列を生成します。
         新しく生成された列は既存データの最後の列に追加されます。
         結果にタイムスタンプデータを含めるかどうかを選択できます。
-
-        Args:
-            sum_target (list): 合計する列のインデックスリスト デフォルト: None（全ての列）
-            timestamp (bool): 結果にタイムスタンプを含めるかどうか デフォルト: True
-        
-        Returns:
-            np.ndarray : 既存データに新しい列が追加された配列
-
-        Raises:
-            ValueError: データがロードされていない場合に発生します。
         """        
-        self.__data_check()
-        data_arr = self.data
-        if timestamp:
-            data_arr = np.hstack((self.timestamps.reshape(-1, 1), data_arr))
+        data = self.data
 
+        # 合計する列のインデックスが指定されていない場合は全ての列を合計
         if sum_target is None:
-            row_sum = data_arr.sum(axis=1)
+            sum_row = data.sum(axis=1)
+        # 合計する列のインデックスが指定されている場合はその列のみを合計
         else:
-            selected_data = data_arr[:, sum_target]
-            row_sum = selected_data.sum(axis=1)
+            selected_data = data[:, sum_target]
+            sum_row = selected_data.sum(axis=1)
         
-        row_sum = row_sum.reshape(-1, 1)  # Reshape to make it a column vector
-        combined_data = np.hstack((data_arr,row_sum))
+        # 1次元配列を2次元に変換
+        sum_row = sum_row.reshape(-1, 1)  
+        # 新しいテータと既存データを結合
+        combined_data = np.hstack((data, sum_row))
         return combined_data
 
-    
-    def save_combined(self, 
-                      save_path="./added_data.csv", 
-                      header='new_data', 
-                      sum_target = None,
-                      timestamps=True,): 
+    def save_data(self, 
+                save_path="./added_data.csv", 
+                header='new_data'): 
         """
         新しく生成されたデータと結合データをCSVファイルとして保存します。
-
-        Args:
-            save_path (str): 保存するファイルのパス
-            header (str): 生成された列のヘッダー名
-            sum_target (list): 合計する列のインデックスリスト デフォルト: None（全ての列）
-            timestamps (bool): 結果にタイムスタンプを含めるかどうか デフォルト: True
-
-        Return:
-            tuple: (combined_data, header)
-                combined_data (np.ndarray): 既存データに新しい列が追加された配列
-                header (str): 保存されたCSVファイルのヘッダー
-
-        Raises:
-            ValueError: データがロードされていない場合に発生します。
         """
-        self.__data_check()
+        self._data_check()
         save_path = save_path_check(save_path)
-        combined_data = self.add_sum_column(sum_target, timestamp=timestamps)
+        combined_data = self.combined_data
         
         header = self.csv_header + ',' +  header
         self.added_header = header
 
-        np.savetxt(save_path, combined_data, delimiter=',',  header=self.added_header, **self.__options_save)
-        print(f"Data saved to {save_path} with header: {header}")
+        np.savetxt(save_path, combined_data, delimiter=',',  header=self.added_header, fmt=self.process_options['fmt'])
+        print(f"生成されたデータが {save_path}に保存されました。 新しい列データのheader: {header}")
         return combined_data, header
     
     def get_data(self, combined=True):
@@ -224,51 +174,26 @@ class CSVColumnSummer:
         Raises:
             ValueError: データがロードされていない場合に発生します。
         """
-        self.__data_check()
+        self._data_check()
 
         if combined:
-            x_data = self.add_sum_column(timestamp=False)
+            x_data = self.combined_data
         else:
             x_data = self.data
         y_data = self.timestamps
         return x_data, y_data
 
-    def get_header(self, combined=True):
-        """
-        現在ロードされているデータのヘッダー情報を返します。
-
-        Args:
-            combined (bool): Trueの場合、既存のCSVヘッダーと追加された列のヘッダー（added_header）を結合して返します。
-                             Falseの場合、既存のCSVヘッダーのみを返します。
-
-        Returns:
-            str: 要求された形式のヘッダー文字列
-
-        Raises:
-            ValueError: データがロードされていない場合に発生します。
-        """
-        self.__data_check()
-        if combined:
-            header = self.csv_header+','+self.added_header
-        else:
-            header = self.csv_header
-        return header
-
 
 def save_path_check(path):
     """
     指定されたパスをsys.pathに追加します。
-
-    Args:
-        path (str): 追加するパス
-
-    Returns:
-        None
     """
     save_dir = os.path.dirname(path)
+    # pathのディレクトリがない場合、ディレクトリを作成
     if save_dir and not os.path.exists(save_dir):
         os.makedirs(save_dir, exist_ok=True)
     return path
+
 
 if __name__ == "__main__":
     # Example usage
