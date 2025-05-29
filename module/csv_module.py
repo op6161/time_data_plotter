@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import pandas as pd
+import logging
+import sys
 
 class InvalidFileTypeError(Exception):
     """CSVファイルでない場合に発生する例外"""
@@ -25,7 +27,7 @@ class CSVFileReadError(Exception):
         return self.message
 
 
-def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_value=0):
+def load_csv_file(csv_path, delimiter: str =',', loader: str = 'np', fillna=True, fillna_value=0):
     """
     CSVファイルを読み込みます。
     Args:
@@ -84,28 +86,32 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
             # それでも読み込みに失敗した場合は、CSVFileReadErrorを発生
             except Exception as e2:
                  raise CSVFileReadError(csv_path, e2)
-            
+
     csv_path = validate_csv_path(csv_path)
 
     # numpyをloaderに指定した場合
     if loader in ['np', 'numpy']:
         data = _load_csv_with_numpy(csv_path, delimiter, fillna=fillna, fillna_value=fillna_value)    
         if data.shape == (0,):
+            logging.error(f"CSVファイルが空です：{csv_path}")
             raise CSVFileReadError(csv_path, "arrayが空です")
         elif data.size  == 0:
+            logging.error(f"Nan値のみが含まれています：{csv_path}")
             raise CSVFileReadError(csv_path, "Nan値のみが含まれています")
     # pandasをloaderに指定した場
     elif loader in ['pd', 'pandas']:
         data = _load_csv_with_pandas(csv_path, delimiter)
         if data.empty:
+            logging.error(f"CSVファイルが空です：{csv_path}")    
             raise CSVFileReadError(csv_path, "DataFrameが空です")
         elif data.isnull().all().all():
+            logging.error(f"Nan値のみが含まれています：{csv_path}")
             raise CSVFileReadError(csv_path, "Nan値のみが含まれています")
     else:
+        logging.error(f"loaderは'np'または'pd'を指定してください。: loader: {loader}")
         raise ValueError("loaderは'np'または'pd'を指定してください。")
 
-    print(f"CSV file loaded successfully: {csv_path}")  # txt log\
-    print("==="*10) # txt log
+    logging.info(f"データロード完了、CSVファイルのパス：{csv_path}")
     return data, load_header(csv_path, delimiter=delimiter)
 
 
@@ -128,7 +134,7 @@ def load_header(csv_path, delimiter: str = ','):
     return header
 
 
-def validate_csv_path(csv_path: str) -> str:
+def validate_csv_path(csv_path):
     """ 
     CSVファイルのパスを検証します。
 
@@ -137,10 +143,11 @@ def validate_csv_path(csv_path: str) -> str:
         FileNotFoundError: ファイルが見つからない場合に発生します
     """
     if not csv_path.endswith('.csv'):
+        logging.error(f"CSVファイルではありません。: {csv_path}")
         raise InvalidFileTypeError("CSVファイルではありません。拡張子を確認してください。")
     if not os.path.exists(csv_path):
+        logging.error(f"ファイルが存在しません。: {csv_path}")
         raise FileNotFoundError(f"ファイルが存在しません。: {csv_path}") 
-    print(f"CSV file path validated: {csv_path}") # txt log
     return csv_path
 
 if __name__ == "__main__":

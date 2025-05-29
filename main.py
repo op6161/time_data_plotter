@@ -1,5 +1,20 @@
 from module.data_module import CSVColumnSummer
 from module.plot_module import Plotter
+import logging
+import os
+
+# ログの設定
+if not os.path.exists('./log'):
+    os.makedirs('./log', exist_ok=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    handlers=[
+        logging.FileHandler('log/app.log', mode='w', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
 
 def main(
         csv_file_path, 
@@ -11,7 +26,7 @@ def main(
         # fillna_value = 0,
         fmt = '%8g',
         image_name = None):
-    
+    logging.info(f"csv_file_path: {csv_file_path}")
     # summer = CSVColumnSummer(csv_file_path,{'delimiter':delimiter,'fillna':fillna,'fillna_value':fillna_value, 'fmt':fmt})
     summer = CSVColumnSummer(csv_file_path,{'delimiter':delimiter, 'fmt':fmt})
     x_data, y_data = summer.get_data()
@@ -26,6 +41,9 @@ def main(
         plotter.save_plot(save_graph_name)
 
     plotter.draw_plot()
+
+
+    logging.info("実行が完了しました。")  # txt log
 
 
 if __name__ == "__main__":

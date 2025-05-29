@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
+import logging
+import sys
 
 class Plotter:
     """
@@ -47,7 +49,7 @@ class Plotter:
         self.labels = labels
         self.title = title
         self.xlabel = xlabel
-        print("Plotter initialized.") # txt log
+        logging.info("クラスPlotterが初期化されました。") # txt log
         
         if x_data is not None and y_data is not None:
             self.set_plot(x_data,y_data,labels,title,xlabel)
@@ -87,13 +89,15 @@ class Plotter:
             ax.tick_params(axis='y', direction='in', labelsize=8)
             ax.legend([label], loc='center left', bbox_to_anchor=(0.995, 0.885), fontsize=8)
             ax.margins(y=0.2)
-            print(f"{label} plot created.") # txt log
+            # print(f"{label} plot created.")
             return ax
 
         # 入力データの検証
         if x_data.ndim != 2 or y_data.ndim != 1:
+            logging.error("x_dataは２次元配列で、y_dataは１次元配列である必要があります。")
             raise ValueError("x_data must be a 2D array and y_data must be a 1D array.")
         if x_data.shape[0] != y_data.shape[0]:
+            logging.error("x_dataとy_dataの長さが一致していません。")
             raise ValueError("The number of rows in x_data must match the length of y_data.")
         
         # 既存のプロットがあれば閉じる
@@ -122,6 +126,7 @@ class Plotter:
                 
         elif type(labels) is list:
             if len(labels) != cols:
+                logging.error("labels数とx_dataの列数が一致していません。")
                 raise ValueError("The length of labels must match the number of columns in x_data. Use a dictionary to specify labels for specific columns.")
 
         for i in range(cols):
@@ -141,33 +146,30 @@ class Plotter:
         self.title = title
         self.xlabel = xlabel
 
-        print("Plot set successfully.") # txt log
-        print(f"x_data shape: {x_data.shape}") # txt log
-        print(f"y_data shape: {y_data.shape}") # txt log
-        print(f"labels: {labels}") # txt log
-        print(f"title: {title}") # txt log
-        print(f"xlabel: {xlabel}") # txt log
-        print("==="*10) # txt log
+        logging.info("プロットが設定されました。")
+        logging.info(f"x_data shape: {x_data.shape}, y_data shape: {y_data.shape}")
+        logging.info(f"labels: {labels}, title: {title}, xlabel: {xlabel}")
 
         return fig, axes
     
 
-    def __data_check(self):
+    def __data_check(self) -> None:
         """
         データがロードされているかを確認し、ロードされていない場合は例外を発生させます。
         Raises:
             ValueError: データがロードされていない場合に発生します。
         """
         if self.fig is None:
+            logging.error(f"plot_module: {sys._getframe(1).f_code.co_name}():データがロードされていません。'set_plot()'を先に呼び出してください。")
             raise ValueError("Data is not loaded. Please call 'set_plot()' before accessing the data.")
         
-    def draw_plot(self):
+    def draw_plot(self) -> None:
         """
         プロットを表示します。
         """
         self.__data_check()
         plt.show()
-        print("Plot drawn on new window.") # txt log
+        logging.info("設定されたプロットを新しいウィンドウに描画しました。") # txt log
 
     def save_plot(self, name, fmt='.png'):
         """
@@ -180,11 +182,12 @@ class Plotter:
         if not fmt.startswith('.'):
             fmt = '.' + fmt
         self.fig.savefig(name+fmt)
-        print(f"Plot saved as {name+fmt}") # txt log
+        logging.info(f"プロットイメージが'{name+fmt}'に保存されました。") # txt log
 
     def close_plot(self):
         """
         プロットを閉じます。
         """
         self.__data_check()
+
         plt.close(self.fig)

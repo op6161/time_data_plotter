@@ -2,6 +2,8 @@ import numpy as np
 from .csv_module import load_csv_file
 import os
 from typing import Dict, Any, Optional
+import logging
+import sys
 
 class CSVColumnSummer:
     """
@@ -42,10 +44,9 @@ class CSVColumnSummer:
     def __init__(self, path: str = None, options: Optional[Dict[str, Any]] = None):
         """
         Args:
-        options: Dict[str, Any] : オプションの辞書
-        例:
-        path: str : データを含むCSVファイルのパス
-        delimiter: str : CSVファイルで使用される区切り文字（デフォルト: ','）
+            options: (Dict[str, Any]) : オプションの辞書
+            path: (str) : データを含むCSVファイルのパス
+            delimiter: (str) : CSVファイルで使用される区切り文字（デフォルト: ','）
         
         """    
         # クラス初期化
@@ -64,13 +65,12 @@ class CSVColumnSummer:
             # optionsが指定されている場合は、オプションを更新
             self.set_options(**options)
         
-        print("CSVColumnSummer initialized") # txt log
-        print("CSVColumnSummer.options:", self.process_options) # txt log
-
         if path is not None:
             self.load_data(path)
+
+        logging.info("クラスCSVColumnSummerが初期化されました。") # txt log
     
-    def set_options(self, **kwargs):
+    def set_options(self, **kwargs: Dict[str, Any]) -> None:
         """
         クラスのオプションを設定します。
 
@@ -82,18 +82,18 @@ class CSVColumnSummer:
                 added_header (str): 新しく生成された列のヘッダー名（デフォルト: 'AddedData'）
         """
         if not kwargs:
+            logging.error("set_optionsメソッドにオプションが指定されていません。")
             raise ValueError("オプションを指定してください。")
         
         for key, value in kwargs.items():
             if key in self.process_options:
                 self.process_options[key] = value
             else:
+                logging.error(f"set_optionsメソッドに無効なオプションが指定されました: {key}, allowed_options: {self.process_options.keys()}")
                 raise ValueError(f"{key}はオプションに存在しません。allowed_options：　{self.process_options.keys()}")
-            
-        print(f"options updated: {self.process_options}")
 
 
-    def load_data(self, path) -> None:
+    def load_data(self, path: str) -> None:
         """
         指定したパスのCSVファイルをロードし、クラス内部の変数にデータを保存します。
         """
@@ -109,11 +109,7 @@ class CSVColumnSummer:
         self.num_columns = num_columns-1
         self.num_data = len(self.timestamps)
 
-
-        print(f"CSVColumnSummer.data Loaded from {path}") # txt log
-        print(f"CSVColumnSummer.data Number of columns: {self.num_columns}, (without timestamp)") # txt log
-        print(f"CSVColumnSummer.data Number of lows: {self.num_data}") # txt log
-
+        logging.info(f"CSVColumnSummer.dataがロードされました。パス: {path}, データの形状: {self.data.shape}, ヘッダー: {self.csv_header}") # txt log
         self.combined_data = self._get_combined_data()
 
     def _data_check(self) -> None:
@@ -124,7 +120,9 @@ class CSVColumnSummer:
             ValueError: データがロードされていない場合に発生します。
         """
         if self.data is None or self.timestamps is None:
+            logging.error(f"data_module: {sys._getframe(1).f_code.co_name}()：データがロードされていません。先にload_data()メソッドを実行してください。")
             raise ValueError("データがロードされていません。loadメソッドを実行してください。")
+    
 
     def show_config(self):
         """
@@ -136,7 +134,7 @@ class CSVColumnSummer:
         print("==="*10) # txt log
 
 
-    def _get_combined_data(self, sum_target=None):
+    def _get_combined_data(self, sum_target: Optional[list] = None) -> np.ndarray:
         """
         各行ごとにデータの選択された列の値を合計し、新しい列を生成します。
         新しく生成された列は既存データの最後の列に追加されます。
@@ -159,8 +157,8 @@ class CSVColumnSummer:
         return combined_data
 
     def save_data(self, 
-                save_path="./added_data.csv", 
-                header='new_data'): 
+                save_path: str = "./added_data.csv", 
+                header: str = 'new_data'): 
         """
         新しく生成されたデータと結合データをCSVファイルとして保存します。
         """
@@ -172,10 +170,11 @@ class CSVColumnSummer:
         self.added_header = header
 
         np.savetxt(save_path, combined_data, delimiter=',',  header=self.added_header, fmt=self.process_options['fmt'])
-        print(f"生成されたデータが {save_path}に保存されました。 新しい列データのheader: {header}")
+        logging.info(f"生成されたデータが'{save_path}'に保存されました。 新しい列データのheader: {header}")
         return combined_data, header
     
-    def get_data(self, combined=True):
+
+    def get_data(self, combined: bool = True):
         """
         ロードされたデータとタイムスタンプを返します。
 
@@ -209,7 +208,7 @@ def save_path_check(path):
     # pathのディレクトリがない場合、ディレクトリを作成
     if save_dir and not os.path.exists(save_dir):
         os.makedirs(save_dir, exist_ok=True)
-        print(f"Directory created: {save_dir}")  # txt log
+        logging.info(f"ディレクトリ'{save_dir}'が作成されました。")
     return path
 
 
