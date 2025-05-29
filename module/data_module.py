@@ -65,7 +65,7 @@ class CSVColumnSummer:
             self.set_options(**options)
         
         print("CSVColumnSummer initialized") # txt log
-        print("CSVColumnSummer.options:", self.options) # txt log
+        print("CSVColumnSummer.options:", self.process_options) # txt log
 
         if path is not None:
             self.load_data(path)

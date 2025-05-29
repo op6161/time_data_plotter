@@ -8,8 +8,6 @@ save_graph: true                          # プロットのイメージを保存
 
 # CSV読み込みオプション
 delimiter: ','                            # 入力するCSVファイルの区切り文字
-fillna: true                              # nan値を置換するか
-fillna_value: 0                           # nan値の置換値
 
 # CSV保存オプション
 fmt: '%8g'                                # CSV保存時の数値フォーマット（デフォルト: %8g）。

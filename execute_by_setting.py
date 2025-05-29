@@ -18,8 +18,8 @@ if __name__ == "__main__":
         new_data_name = config.get("new_data_name"),
         save_path = config.get("save_path"),
         save_graph = config.get("save_graph"),
-        fillna = config.get("fillna"),
-        fillna_value = config.get("fillna_value"),
+        # fillna = config.get("fillna"),
+        # fillna_value = config.get("fillna_value"),
         fmt = config.get("fmt"),
         image_name = config.get("save_graph_name"),
     ) 
