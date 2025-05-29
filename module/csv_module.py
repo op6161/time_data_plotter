@@ -16,9 +16,9 @@ class CSVFileReadError(Exception):
     def __init__(self, filepath, original_exception=None):
         self.filepath = filepath
         self.original_exception = original_exception
-        self.message = f"Cannot read CSV file: {filepath}"
+        self.message = f"CSVファイル読みに失敗しました: {filepath}"
         if original_exception:
-            self.message += f" (Reason: {original_exception})"
+            self.message += f" (理由: {original_exception})"
         super().__init__(self.message)
 
     def __str__(self):
@@ -29,7 +29,6 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
     """
     CSVファイルを読み込みます。
     Args:
-        csv_path (str): CSVファイルのパス
         delimiter (str): CSVファイルの区切り文字（デフォルト: ','）
         loader (str): 'np'または'pd'を指定（デフォルト: 'np'）
 
@@ -42,17 +41,10 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
 
     Example:
         data = load_csv_file('data.csv', delimiter=',', loader='np')
-        data = load_csv_file('data.csv', delimiter=',', loader='pd')
     """
     def _load_csv_with_numpy(csv_path, delimiter, fillna=True ,fillna_value=0):
         """
         numpyでCSVファイルを読み込みます。
-        Args:
-            csv_path (str): CSVファイルのパス
-            delimiter (str): CSVファイルの区切り文字（デフォルト: ','）
-
-        Returns:
-            data (np.ndarray): 読み込んだCSVファイルのデータ
         """
         args = {
             'delimiter': delimiter,
@@ -64,76 +56,90 @@ def load_csv_file(csv_path, delimiter=',', loader = 'np', fillna=True, fillna_va
         try:
             data = np.genfromtxt(csv_path, **args)
             return data
+        
+        # headerがない場合は、skip_headerを削除して再度読み込み
         except Exception as e1:
             try:
                 args.pop('skip_header', None)
                 data = np.genfromtxt(csv_path, **args)
                 return data
+            
+            # それでも読み込みに失敗した場合は、CSVFileReadErrorを発生
             except Exception as e2:
                  raise CSVFileReadError(csv_path, e2)
 
     def _load_csv_with_pandas(csv_path, delimiter):
         """
         pandasでCSVファイルを読み込みます。
-        Args:
-            csv_path (str): CSVファイルのパス
-            delimiter (str): CSVファイルの区切り文字（デフォルト: ','）
-
-        Returns:
-            data (pd.DataFrame): 読み込んだCSVファイルのデータ
         """
-        
         try:
             data = pd.read_csv(csv_path, delimiter=delimiter, skiprows=1)
             return data
+        
+        # headerがない場合は、skip_headerを削除して再度読み込み
         except Exception as e1:
             try:
                 data = pd.read_csv(csv_path, delimiter=delimiter)
                 return data
+            # それでも読み込みに失敗した場合は、CSVFileReadErrorを発生
             except Exception as e2:
                  raise CSVFileReadError(csv_path, e2)
-
+            
     csv_path = validate_csv_path(csv_path)
 
+    # numpyをloaderに指定した場合
     if loader in ['np', 'numpy']:
         data = _load_csv_with_numpy(csv_path, delimiter, fillna=fillna, fillna_value=fillna_value)    
         if data.shape == (0,):
-            raise CSVFileReadError(csv_path, "Empty Array")
+            raise CSVFileReadError(csv_path, "arrayが空です")
         elif data.size  == 0:
-            raise CSVFileReadError(csv_path, "Only NaN values found")
-        
+            raise CSVFileReadError(csv_path, "Nan値のみが含まれています")
+    # pandasをloaderに指定した場
     elif loader in ['pd', 'pandas']:
         data = _load_csv_with_pandas(csv_path, delimiter)
         if data.empty:
-            raise CSVFileReadError(csv_path, "Empty DataFrame")
+            raise CSVFileReadError(csv_path, "DataFrameが空です")
         elif data.isnull().all().all():
-            raise CSVFileReadError(csv_path, "Only NaN values found")
+            raise CSVFileReadError(csv_path, "Nan値のみが含まれています")
     else:
-        raise ValueError("Invalid loader specified. Use 'np' or 'pd'")
-    
+        raise ValueError("loaderは'np'または'pd'を指定してください。")
+
     print(f"CSV file loaded successfully: {csv_path}")  # txt log\
     print("==="*10) # txt log
-    return data
+    return data, load_header(csv_path, delimiter=delimiter)
 
 
-def validate_csv_path(csv_path):
-    """ 
-    CSVファイルのパスを検証します。
+def load_header(csv_path, delimiter: str = ','):
+    """
+    現在ロードされているデータのヘッダー情報を返します。
+
     Args:
-        csv_path (str): CSVファイルのパス
 
     Returns:
-        csv_path (str): 検証済みのCSVファイルのパス
+        str: 要求された形式のヘッダー文字列
+
+    Raises:
+        ValueError: データがロードされていない場合に発生します。
+    """
+    with open(csv_path, 'r', encoding='utf-8') as f:
+        header_line = f.readline().strip()
+    header = list(header_line.split(delimiter))
+    header = ','.join(header)
+    return header
+
+
+def validate_csv_path(csv_path: str) -> str:
+    """ 
+    CSVファイルのパスを検証します。
 
     Raises:
         InvalidFileTypeError: ファイルがCSVファイルでない場合に発生します
         FileNotFoundError: ファイルが見つからない場合に発生します
     """
     if not csv_path.endswith('.csv'):
-        raise InvalidFileTypeError("File must be a CSV file.")
+        raise InvalidFileTypeError("CSVファイルではありません。拡張子を確認してください。")
     if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"File not found: {csv_path}")
-    
+        raise FileNotFoundError(f"ファイルが存在しません。: {csv_path}") 
     print(f"CSV file path validated: {csv_path}") # txt log
     return csv_path
 
